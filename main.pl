@@ -16,6 +16,15 @@ swap(List, Index, NewIndex, NewList) :-
     replace_nth0(List, Index, A, B, TmpList),
     replace_nth0(TmpList, NewIndex, B, A, NewList).
 
+list_member(X,[X|_]).
+list_member(X,[_|TAIL]) :- list_member(X,TAIL).
+
+range(Low, Low, High).
+range(Out,Low,High) :-
+    NewLow is Low+1,
+    NewLow =< High,
+    range(Out, NewLow, High).
+
 move(up, State, NewState) :-
     dim(N),
     nth0(P, State, v),
@@ -45,28 +54,42 @@ move(right, State, NewState) :-
     swap(State, P, NewPos, NewState).
 
 main :-
+    search(Sol),
+    write(Sol),
+    nl,
+    search_2(Sol),
+    write(Sol),
+    nl,
+    search_3(Sol),
+    write(Sol).
+
+search(Sol) :-
+    maxDepth(Max),
+    length(_, D),
+    D =< Max,
+    write("Depth is "), write(D), write("\n"),
     initialPosition(S),
-    write(S).
+    id_search(S, Sol, [S], D).
 
-start:-
-  id(S),
-  write(S).
+id_search(State, [], _, _) :-
+    finalPosition(State).
+id_search(State, [Action|OtherActions], VisitedNodes, N) :-
+    N > 0,
+    move(Action, State, NewState),
+    \+list_member(NewState, VisitedNodes),
+    N1 is N - 1,
+    id_search(NewState, OtherActions, [NewState|VisitedNodes], N1).
 
-id(Sol):-
-  maxDepth(D),
-  initialPosition(S),
-  length(_, L),
-  L =< D,
-  write("Depth is "), write(L), write("\n"),
-  id_search(S, Sol, [S], L),
-  write("\n"),
-  write(Sol).
+search_2(Sol) :-
+    maxDepth(M),
+    between(0, M, N),
+    write("Depth is "), write(N), write("\n"),
+    initialPosition(S),
+    id_search(S, Sol, [S], N).
 
-id_search(S, [], _, _):- 
-  finalPosition(S).
-id_search(S, [Action|OtherActions], VisitedNodes, N):-
-  N>0,
-  move(Action, S, NewS),
-  \+member(NewS, VisitedNodes),
-  N1 is N-1,
-  id_search(NewS, OtherActions, [NewS|VisitedNodes], N1).
+search_3(Sol) :-
+    maxDepth(M),
+    range(N, 0, M),
+    write("Depth is "), write(N), write("\n"),
+    initialPosition(S),
+    id_search(S, Sol, [S], N).
